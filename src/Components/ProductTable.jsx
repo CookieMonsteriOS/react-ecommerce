@@ -32,16 +32,27 @@ export default function ProductTable({ cart, updateCart }) {
 
   const [filterOptions, setFilterOptions] = useState(getDefaultFilterOptions());
   const [sortOptions, setSortOptions] = useState(getDefaultSortOptions());
-
+  
   useEffect(() => {
-    let fetchProducts = async () => {
-      console.info("Fetching Products...");
-      let res = await fetch("http://localhost:3001/products");
-      let body = await res.json();
-      setProducts(body);
-    };
     fetchProducts();
-  });
+  },[sortOptions, filterOptions]);
+
+  const fetchProducts = async () => {
+    let res = await fetch("http://localhost:3001/products");
+    let body = await res.json();
+    setProducts(body);
+    handleSorted();
+  };
+
+  const handleSorted = ()=>{
+    if (sortOptions[0].name === 'Price' && sortOptions[0].current) {
+      let productPrice = [...products].sort((a, b) => b.price - a.price); 
+      setProducts(productPrice);
+  } else if (sortOptions[0].name === 'Newest' && sortOptions[0].current) {
+      let newestProducts = [...products].sort((a, b) => a.releaseDate - b.releaseDate); 
+      setProducts(newestProducts);
+  }
+  }
 
   return (
     <div className="bg-white">

@@ -7,7 +7,28 @@ function classNames(...classes) {
 }
 
 export default function ProductFilters({ filterOptions, setFilterOptions, sortOptions, setSortOptions }) {
-  return (
+
+  const handleSort = (option) => {
+    let selectedOption = sortOptions.map((o) => {
+        if (o.name === option.name) {
+            return {
+                ...o,
+                current: true
+            };
+        } else {
+            return {
+                ...o,
+                current: false 
+            };
+        }
+    });
+    setSortOptions(selectedOption); 
+}
+
+const handleFilter =(option)=>{
+  console.log('Called from filter')
+}  
+return (
     <Disclosure
       as="section"
       aria-labelledby="filter-heading"
@@ -49,6 +70,7 @@ export default function ProductFilters({ filterOptions, setFilterOptions, sortOp
                       type="checkbox"
                       className="flex-shrink-0 h-4 w-4 border-gray-300 rounded text-black focus:ring-black"
                       defaultChecked={option.checked}
+                      onChange={()=> handleFilter(option)}
                     />
                     <label htmlFor={`price-${optionIdx}`} className="ml-3 min-w-0 flex-1 text-gray-600">
                       {option.label}
@@ -69,6 +91,7 @@ export default function ProductFilters({ filterOptions, setFilterOptions, sortOp
                       type="checkbox"
                       className="flex-shrink-0 h-4 w-4 border-gray-300 rounded text-black focus:ring-black"
                       defaultChecked={option.checked}
+                      onChange={()=> handleFilter(option)}
                     />
                     <label htmlFor={`color-${optionIdx}`} className="ml-3 min-w-0 flex-1 text-gray-600">
                       {option.label}
@@ -108,9 +131,7 @@ export default function ProductFilters({ filterOptions, setFilterOptions, sortOp
                     <Menu.Item key={option.name}>
                       {({ active }) => (
                         <button
-                          onClick={() => {
-                            // TODO
-                          }}
+                          onClick={() => handleSort(option)}
                           className={classNames(
                             option.current ? "font-medium text-gray-900" : "text-gray-500",
                             active ? "bg-gray-100" : "",
