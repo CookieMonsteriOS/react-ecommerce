@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ProductFilters from "./ProductFilters";
 
-const getDefaultFilterOptions = () => {
+export const getDefaultFilterOptions = () => {
   return {
     price: [
       { minValue: 0, maxValue: 25, label: "$0 - $25", checked: false },
@@ -20,7 +20,7 @@ const getDefaultFilterOptions = () => {
   };
 };
 
-const getDefaultSortOptions = () => {
+export const getDefaultSortOptions = () => {
   return [
     { name: "Price", current: false },
     { name: "Newest", current: false },
@@ -30,31 +30,64 @@ const getDefaultSortOptions = () => {
 export default function ProductTable({ cart, updateCart }) {
   let [products, setProducts] = useState([]);
 
+  //TODO: Improve filter archetecture
   const [filterOptions, setFilterOptions] = useState(getDefaultFilterOptions());
   const [sortOptions, setSortOptions] = useState(getDefaultSortOptions());
   
   useEffect(() => {
     fetchProducts();
-  },[sortOptions, filterOptions]);
+  },[]);
+
+
+  useEffect(() => {
+    handleSorted();
+  },[sortOptions]);
+
+  useEffect(() => {
+    handleFiltered();
+  },[filterOptions]);
 
   const fetchProducts = async () => {
     let res = await fetch("http://localhost:3001/products");
     let body = await res.json();
     setProducts(body);
-    handleSorted();
+
   };
 
   const handleSorted = ()=>{
-    if (sortOptions[0].name === 'Price' && sortOptions[0].current) {
-      let productPrice = [...products].sort((a, b) => b.price - a.price); 
+    if (sortOptions.some(e => e.name === 'Price' && e.current)) {
+      const productPrice = [...products].sort((a, b) => b.price - a.price); 
       setProducts(productPrice);
-  } else if (sortOptions[0].name === 'Newest' && sortOptions[0].current) {
-      let newestProducts = [...products].sort((a, b) => a.releaseDate - b.releaseDate); 
+  } else if (sortOptions.some(e => e.name === 'Newest' && e.current)) {
+      const newestProducts = [...products].sort((a, b) => a.releaseDate - b.releaseDate); 
       setProducts(newestProducts);
   }
   }
 
-  return (
+  const handleFiltered = () => {
+    const anyFilterChecked = filterOptions.price.some(filter => filter.checked) ||
+                             filterOptions.color.some(filter => filter.checked);
+    if (!anyFilterChecked) {
+        setProducts(products);
+        return;
+    }
+
+    const filteredProducts = products.filter(product => {
+        const priceMatched = filterOptions.price.every(filter => {
+            return !filter.checked || (product.price >= filter.minValue && product.price <= filter.maxValue);
+        });
+
+        const colorMatched = filterOptions.color.every(filter => {
+            return !filter.checked || product.color === filter.value;
+        });
+
+        return priceMatched && colorMatched;
+    });
+
+    setProducts(filteredProducts);
+};
+
+return (
     <div className="bg-white">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:max-w-7xl lg:px-8">
         <h2 className="sr-only">Products</h2>

@@ -1,12 +1,14 @@
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon, FilterIcon } from "@heroicons/react/solid";
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function ProductFilters({ filterOptions, setFilterOptions, sortOptions, setSortOptions }) {
+export default function ProductFilters({ filterOptions, setFilterOptions, sortOptions, setSortOptions}) {
+  const [selectedFilters, setSelectedFilterCount] = useState(0);
+
 
   const handleSort = (option) => {
     let selectedOption = sortOptions.map((o) => {
@@ -25,9 +27,24 @@ export default function ProductFilters({ filterOptions, setFilterOptions, sortOp
     setSortOptions(selectedOption); 
 }
 
-const handleFilter =(option)=>{
-  console.log('Called from filter')
-}  
+const handleFilter = (option) => {
+
+  const category = 'minValue' in option ? 'price' : 'color';
+
+  const updatedFilterOptions = {
+      ...filterOptions,
+      [category]: filterOptions[category].map(item => {
+          if ((category === 'price' && item.minValue === option.minValue && item.maxValue === option.maxValue) ||
+              (category === 'color' && item.value === option.value)) {
+              item.checked = !item.checked;
+              setSelectedFilterCount(prevCount => prevCount + (item.checked ? 1 : -1));
+          }
+          return item;
+      })
+  };
+  setFilterOptions(updatedFilterOptions)
+};
+
 return (
     <Disclosure
       as="section"
@@ -45,7 +62,7 @@ return (
                 className="flex-none w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-500"
                 aria-hidden="true"
               />
-              0 Filters
+              {selectedFilters} Filters
             </Disclosure.Button>
           </div>
           <div className="pl-6">
