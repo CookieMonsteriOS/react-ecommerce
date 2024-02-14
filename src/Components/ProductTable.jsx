@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ProductFilters from "./ProductFilters";
+import Cart from "./Cart";
 
 export const getDefaultFilterOptions = () => {
   return {
@@ -118,8 +119,8 @@ return (
                         }
                       });
                     }
-
                     updateCart(newCart);
+                    localStorage.setItem('cartData', JSON.stringify(newCart));   
                   }}
                 >
                   Add To Cart
